@@ -1,0 +1,209 @@
+<html>
+<!-- Whosthat Frontend. Written by Ilya Zverev, licensed WTFPL -->
+<head>
+<title>Who's That - OSM User Names Database</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+<script language="javascript">
+var server = 'http://textual.ru/whosthat/whosthat.php';
+var osmUser = 'http://www.openstreetmap.org/user/';
+var enableChange = false;
+var autocomplete;
+var lastString = '';
+var http;
+
+function init() {
+    var queryString = parseQueryString();
+    if( queryString.q ) {
+        setUser(queryString.q);
+    } else if( queryString.name ) {
+        setName(queryString.name);
+    } else if( queryString.id ) {
+        setId(queryString.id);
+    } else {
+        showRecent();
+    }
+
+    enableChange = true;
+    document.getElementById('formuser').focus();
+}
+
+function parseQueryString() {
+    var query_string = {};
+    var query = window.location.search.substring(1);
+    var vars = query.split("&");
+    for( var i = 0; i < vars.length; i++ ) {
+        var pair = vars[i].split("=");
+        pair[1] = decodeURIComponent(pair[1]);
+        if (typeof query_string[pair[0]] === "undefined") {
+            // If first entry with this name
+            query_string[pair[0]] = pair[1];
+        } else if (typeof query_string[pair[0]] === "string") {
+            // If second entry with this name
+            var arr = [ query_string[pair[0]], pair[1] ];
+            query_string[pair[0]] = arr;
+        } else {
+            // If third or later entry with this name
+            query_string[pair[0]].push(pair[1]);
+        }
+    } 
+    return query_string;
+}
+
+function ajax(url, func) {
+    try { http.abort(); } catch(e) {}
+    var http = null;
+    if (window.XMLHttpRequest) {
+        http = new XMLHttpRequest();
+    } else if (window.ActiveXObject) { // Older IE.
+        http = new ActiveXObject("MSXML2.XMLHTTP.3.0");
+    }
+    http.onreadystatechange = function() {
+        if( http.readyState != 4 || http.status != 200 ) return;
+        var result = eval(http.responseText);
+        func(result);
+    };
+    http.open('GET', url, true);
+    http.send(null);
+}
+
+function showRecent() {
+    ajax(server + '?action=recent', function(result) {
+        var line = '';
+        for( var i = 0; i < result.length; i++ ) {
+            line += '<div class="recent">';
+            line += '<span class="date">'+shortDate(result[i]['date'])+'</span> ';
+            line += '<span class="renaming">'+escapeHtml(result[i]['from'])+' &rarr; <a href="'+osmUser+encodeURIComponent(result[i]['to'])+'" target="_blank">'+escapeHtml(result[i]['to'])+'</a></span>';
+            line += '</div>';
+        }
+        document.getElementById('results').innerHTML = line;
+    });
+}
+
+function setUser(user) {
+    document.getElementById('formuser').value = user;
+    updateAutocomplete();
+}
+
+function userFieldChanged() {
+    if( !enableChange ) return;
+    clearTimeout(autocomplete);
+    autocomplete = setTimeout(function(){updateAutocomplete();}, 300);
+}
+
+function updateAutocomplete() {
+    var str = document.getElementById('formuser').value;
+    if( str == lastString ) return;
+    lastString = str;
+    ajax(server + '?action=names&q=' + encodeURIComponent(str), function(result) {
+        var line = '';
+        for( var i = 0; i < result.length; i++ ) {
+            line += '<div class="found"><a href="?id='+result[i]['id']+'">#'+result[i]['id']+'</a>: <span class="'+(result[i]['names'].length>1 ? 'foundmany':'foundone')+'">'+escapeHtml(result[i]['names'].join(', '))+'</span></div>';
+        }
+        if( line == '' && str.length > 3 ) line = 'No users found';
+        document.getElementById('results').innerHTML = line;
+    });
+}
+
+function shortDate(str) {
+    return str.length != 10 ? str : str.substring(8,10) + '.' + str.substring(5,7);
+}
+
+function normalDate(str) {
+    return str.length != 10 ? str : str.substring(8,10) + '.' + str.substring(5,7) + '.' + str.substring(2,4);
+}
+
+function setName(name) {
+    document.getElementById('formuser').value = name;
+    ajax(server + '?action=info&name=' + encodeURIComponent(name), function(result) {
+        var line = '';
+        for( var i = 0; i < result.length; i++ ) {
+            line += infoToString(result[i]);
+        }
+        if( line.length == 0 ) line = 'No such name in the database';
+        document.getElementById('results').innerHTML = line;
+    });
+}
+
+function setId(uid) {
+    ajax(server + '?action=info&id=' + uid, function(result) {
+        var line = result.length > 0 ? infoToString(result[0]) : 'Unknown user id';
+        document.getElementById('results').innerHTML = line;
+    });
+}
+
+function infoToString(info) {
+    var line = '<div class="info"><div class="info-id">#'+info['id']+'</div>';
+    for( var i = 0; i < info['names'].length; i++ ) {
+        var name = info['names'][i]['name'];
+        name = i + 1 == info['names'].length ? '<a href="'+osmUser+encodeURIComponent(name)+'" target="_blank">'+escapeHtml(name)+'</a>' : escapeHtml(name);
+        line += '<div><span class="name">'+name+'</span> <span class="interval">'+normalDate(info['names'][i]['first'])+'&mdash;'+normalDate(info['names'][i]['last'])+'</span></div>';
+    }
+    return line;
+}
+
+function escapeHtml(str) {
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+</script>
+<style>
+    body {
+        width: 500px;
+        margin: 8 auto;
+        font-family: Verdana, Arial, sans-serif;
+        overflow: hidden;
+    }
+    h1 {
+        text-align: center;
+        font-size: 36px;
+        margin: 0;
+    }
+    h2 {
+        text-align: center;
+        font-size: 14px;
+        margin: 0;
+        margin-bottom: 2em;
+    }
+    .nodeco {
+        text-decoration: none;
+        color: black;
+    }
+    form {
+        text-align: center;
+        margin: 0;
+    }
+    #results {
+        margin-top: 2em;
+        line-height: 150%;
+    }
+    .date {
+        color: #777;
+        padding-right: 1em;
+    }
+    .foundone {
+        color: #777;
+    }
+    .info {
+        margin-bottom: 2em;
+        margin-left: 1em;
+    }
+    .info-id {
+        font-weight: bold;
+        margin-left: -1em;
+    }
+    .info .name {
+        display: inline-block;
+        min-width: 130px;
+    }
+    .info .interval {
+        color: #777;
+    }
+</style>
+</head>
+<body onload="javascript:init();">
+    <a class="nodeco" href="?"><h1>Who's That?</h1><h2>OSM User Names Database</h2></a>
+    <form method="get">
+    <div><input type="text" name="q" id="formuser" value="" onkeyup="javascript:userFieldChanged();"><input type="submit" value="Go"></div>
+    </form>
+    <div id="results"></div>
+</body>
+</html>
