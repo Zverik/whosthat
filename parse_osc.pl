@@ -48,7 +48,7 @@ if( $help ) {
 
 usage("Please specify database and user names") unless $database && $user;
 my $db = DBIx::Simple->connect("DBI:mysql:database=$database;host=$dbhost;mysql_enable_utf8=1", $user, $password, {RaiseError => 1});
-$db->query("set names 'utf8'") or die "Failed to set utf8 in mysql";
+$db->query("set names 'utf8mb4'") or die "Failed to set utf8 in mysql";
 create_table() if $clear;
 my $ua = LWP::UserAgent->new();
 $ua->env_proxy;
@@ -178,7 +178,7 @@ create table whosthat (
 	primary key (user_id, user_name),
 	index idx_name (user_name),
         index idx_last (date_last)
-)
+) CHARACTER SET utf8mb4
 CREAT1
     $db->query($sql) or die $db->error;
     print STDERR "Database tables were recreated.\n" if $verbose;
