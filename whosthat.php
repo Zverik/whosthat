@@ -8,7 +8,7 @@ if( isset($_REQUEST['action']) ) {
     if ($db->connect_errno) {
         $result['error'] = "Failed to connect to MySQL: (" . $db->connect_errno . ") " . $db->connect_error;
     } else {
-        $db->set_charset('utf8');
+        $db->set_charset('utf8mb4');
 
         $ids = array();
         if( isset($_REQUEST['id']) && preg_match('/^\d+$/', $_REQUEST['id']) ) {
