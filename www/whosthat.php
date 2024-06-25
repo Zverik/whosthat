@@ -1,10 +1,12 @@
-<? // Query user names database. Written by Ilya Zverev, licensed WTFPL.
+<?php // Query user names database. Written by Ilya Zverev, licensed WTFPL.
+require('config.php');
+
 header('Content-type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 $recent_cache = 'recent.json';
 $result = array();
 if( isset($_REQUEST['action']) ) {
-    $db = new mysqli('localhost', 'wdi', '', 'wdi');
+    $db = new mysqli(MYSQL_HOST, MYSQL_USER, MYSQL_PASSWORD, MYSQL_DATABASE);
     if ($db->connect_errno) {
         $result['error'] = "Failed to connect to MySQL: (" . $db->connect_errno . ") " . $db->connect_error;
     } else {

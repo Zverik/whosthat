@@ -1,0 +1,6 @@
+<?php
+const MYSQL_HOST = 'localhost';
+const MYSQL_DATABASE = 'whosthat';
+const MYSQL_USER = 'whosthat';
+const MYSQL_PASSWORD = '';
+?>
