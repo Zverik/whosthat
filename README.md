@@ -12,10 +12,10 @@ dump won't do: it contains only the latest user names). After that just
 set up hourly replication. Parameters of the script are identical to the
 similar named one in [WHODIDIT](https://github.com/Zverik/whodidit) project.
 
-You can download database backup [here](http://whosthat.osmz.ru/whosthat-hourly-71406.sql.gz).
-Number in the file name denotes sequence index which you should put into
-`state.txt` when using hourly updates. This file is updated very seldom:
-replication diffs are processed very fast, so there's no need.
+You can download database backup [here](http://whosthat.osmz.ru/whosthat.tgz).
+It includes a `state.txt` file to put into `scripts/` and a mysql database
+dump. The file is updated weekly:
+replication diffs are processed very fast, so there's no need to do it more often.
 
 ## API
 

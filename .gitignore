@@ -2,3 +2,5 @@ state.txt
 __pycache__/
 *.swp
 www/config.php
+*.tgz
+*.gz
