@@ -86,6 +86,18 @@ if( isset($_REQUEST['action']) ) {
                 $res2->close();
                 @file_put_contents($recent_cache, json_encode($result));
             }
+
+        } elseif( $action == 'refresh' ) { // Get the latest username directly from OSM servers
+            // refreshing only 1 user at a time in order to reduce load on OSM API
+            if( count($ids) == 1 ) {
+                $id = $ids[0];
+                $api = @file_get_contents("https://api.openstreetmap.org/api/0.6/user/$id");
+                if ($api && preg_match('/display_name="([^"]+)"/', $api, $matches)) {
+                    $name = html_entity_decode($matches[1], ENT_QUOTES | ENT_XML1, 'UTF-8');
+                    $db->query("insert into whosthat (user_id, user_name, date_first, date_last) values ($id, '".$db->escape_string($name)."', curdate(), curdate()) on duplicate key update date_last = curdate()");
+                    $result[] = $name;
+                }
+            }
         } else { // Unknown action, return error
             $result['error'] = 'Unknown action';
         }

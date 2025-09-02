@@ -133,8 +133,16 @@ function setId(uid) {
     });
 }
 
+function refreshId(uid) {
+    ajax(server + '?action=refresh&id=' + uid, function(result) {
+        if( result.length > 0 ) {
+            setId(uid);
+        }
+    });
+}
+
 function infoToString(info) {
-    var line = '<div class="info"><div class="info-id">#'+info['id']+'</div>';
+    var line = '<div class="info"><div class="header"><div class="info-id">#'+info['id']+'</div> <a href="#" onclick="refreshId('+info['id']+'); return false;">(refresh)</a></div>';
     for( var i = 0; i < info['names'].length; i++ ) {
         var name = info['names'][i]['name'];
         name = i + 1 == info['names'].length ? '<a href="'+osmUser+encodeURIComponent(name)+'" target="_blank">'+escapeHtml(name)+'</a>' : escapeHtml(name);
@@ -188,9 +196,12 @@ function escapeHtml(str) {
         margin-bottom: 2em;
         margin-left: 1em;
     }
-    .info-id {
-        font-weight: bold;
+    .info .header {
         margin-left: -1em;
+    }
+    .info-id {
+        display: inline-block;
+        font-weight: bold;
     }
     .info .name {
         display: inline-block;

@@ -26,12 +26,14 @@ or JSONP (if you specify `jsonp=<name>` parameter). It has following actions:
     It's an array of strings.
   * `action=names`: returns all names for specified users, sorted by date.
     It's an array of hashes: `id` for user id and `names` for an array of user names.
-  * `action=info`: returns detailed information on name changes for specidied users.
+  * `action=info`: returns detailed information on name changes for specified users.
     It's an array of hashes: `id` and `names`, the latter contains array of hashes
     with `name` for user name, `first` for the first spotted usage in database
     and `last` for the last one.
   * `action=recent`: returns 15 last renamings.
     It's an array of hashes with `id`, `date`, `from` and `to` keys.
+  * `action=refresh`: returns current username for a specified user ID directly
+    from OSM API and updates the database. It's an array with a single string.
 
 To specify users, use one of those parameters:
 
