@@ -96,15 +96,25 @@ function userFieldChanged() {
 
 function updateAutocomplete() {
     var str = document.getElementById('formuser').value;
-    if( str == lastString ) return;
+    if( str == lastString || str == '' ) return;
     lastString = str;
+    var id = /^\s*\d+\s*$/.test(str) ? Number(str) : null; // Without regex Number('46.0') and Number('0x2E') would return 46 and we don't want that
     ajax(server + '?action=names&q=' + encodeURIComponent(str), function(result) {
         var line = '';
         for( var i = 0; i < result.length; i++ ) {
-            line += '<div class="found"><a href="?id='+result[i]['id']+'">#'+result[i]['id']+'</a>: <span class="'+(result[i]['names'].length>1 ? 'foundmany':'foundone')+'">'+escapeHtml(result[i]['names'].join(', '))+'</span></div>';
+            // If a matching entry for an ID exists, it will be reinserted later by ID search
+            if( result[i]['id'] != id ) line += '<div class="found"><a href="?id='+result[i]['id']+'">#'+result[i]['id']+'</a>: <span class="'+(result[i]['names'].length>1 ? 'foundmany':'foundone')+'">'+escapeHtml(result[i]['names'].join(', '))+'</span></div>';
         }
-        if( line == '' && str.length > 3 ) line = 'No users found';
-        document.getElementById('results').innerHTML = line;
+        if (id) {
+            ajax(server + '?action=names&id=' + id, function(result) {
+                if( result.length == 1 ) line = '<div class="found foundid"><a href="?id='+result[0]['id']+'">#'+result[0]['id']+'</a>: <span class="'+(result[0]['names'].length>1 ? 'foundmany':'foundone')+'">'+escapeHtml(result[0]['names'].join(', '))+'</span></div>' + line;
+                if( line == '' ) line = 'No users found'; // No check for str.length, it must be > 0 if id is set
+                document.getElementById('results').innerHTML = line;
+            });
+        } else {
+            if( line == '' && str.length > 3 ) line = 'No users found';
+            document.getElementById('results').innerHTML = line;
+        }
     });
 }
 
@@ -197,6 +207,9 @@ function escapeHtml(str) {
     .date {
         color: #777;
         padding-right: 1em;
+    }
+    .foundid {
+        font-weight: bold;
     }
     .foundone {
         color: #777;

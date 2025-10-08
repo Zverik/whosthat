@@ -14,7 +14,7 @@ if( isset($_REQUEST['action']) ) {
 
         $ids = array();
         if( isset($_REQUEST['id']) && preg_match('/^\d+$/', $_REQUEST['id']) ) {
-            $ids[] = $_REQUEST['id'];
+            $ids[] = ltrim($_REQUEST['id'], '0');
         }
         elseif( isset($_REQUEST['name']) && strlen($_REQUEST['name']) > 0 ) {
             $res = $db->query('select user_id from whosthat where user_name = \''.$db->escape_string($_REQUEST['name']).'\'');
@@ -36,8 +36,8 @@ if( isset($_REQUEST['action']) ) {
             foreach( $ids as $id ) {
                 $res2 = $db->query("select user_name from whosthat where user_id = $id order by date_last desc limit 1");
                 $row = $res2->fetch_row();
-                $result[] = $row[0];
-                $res2->close(); 
+                if( $row ) $result[] = $row[0];
+                $res2->close();
             }
 
         } elseif( $action == 'info' ) { // Search for user, get all info on each
@@ -51,11 +51,13 @@ if( isset($_REQUEST['action']) ) {
                         'last' => $row['date_last']
                     );
                 }
-                $res2->close(); 
-                $result[] = array(
-                    'id' => $id,
-                    'names' => $u
-                );
+                $res2->close();
+                if( !empty($u) ) {
+                    $result[] = array(
+                        'id' => $id,
+                        'names' => $u
+                    );
+                }
             }
 
         } elseif( $action == 'names' ) { // Get history of username changes
@@ -66,7 +68,7 @@ if( isset($_REQUEST['action']) ) {
                     $names[] = $row['user_name'];
                 }
                 $res2->close();
-                $result[] = array( 'id' => $id, 'names' => $names );
+                if( !empty($names) ) $result[] = array( 'id' => $id, 'names' => $names );
             }
 
         } elseif( $action == 'recent' ) { // Get recent user renames
