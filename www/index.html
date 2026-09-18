@@ -15,11 +15,14 @@ var password = '';
 var http;
 
 function init() {
-    var queryString = parseQueryString();
-    if (queryString.pwd) {
-      password = queryString.pwd;
-      document.getElementById('formpwd').value = queryString.pwd;
+    var cookie = document.cookie;
+    if (cookie) {
+      var m = cookie.match(/pwd=(.+)/);
+      if (m && m[0]) setPassword(m[0]);
     }
+
+    var queryString = parseQueryString();
+    if (queryString.pwd) setPassword(pwd);
     if( queryString.q ) {
         setUser(queryString.q);
     } else if( queryString.name ) {
@@ -138,6 +141,12 @@ function setId(uid) {
         var line = result.length > 0 ? infoToString(result[0]) : 'Unknown user id';
         document.getElementById('results').innerHTML = line;
     });
+}
+
+function setPassword(pwd) {
+    password = pwd;
+    document.getElementById('formpwd').value = pwd;
+    document.cookie = 'pwd=' + pwd;
 }
 
 function refreshId(uid) {
