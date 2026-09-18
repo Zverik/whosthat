@@ -11,10 +11,15 @@ var osmUser = 'https://www.openstreetmap.org/user/';
 var enableChange = false;
 var autocomplete;
 var lastString = '';
+var password = '';
 var http;
 
 function init() {
     var queryString = parseQueryString();
+    if (queryString.pwd) {
+      password = queryString.pwd;
+      document.getElementById('formpwd').value = queryString.pwd;
+    }
     if( queryString.q ) {
         setUser(queryString.q);
     } else if( queryString.name ) {
@@ -66,12 +71,21 @@ function ajax(url, func) {
         var result = eval(http.responseText);
         func(result);
     };
+    if (password != '') url = url + '&password=' + encodeURIComponent(password);
     http.open('GET', url, true);
     http.send(null);
 }
 
 function showRecent() {
     ajax(server + '?action=recent', function(result) {
+        if (result.error) {
+          document.getElementById('results').innerHTML = result.error;
+          if (result.error.indexOf('requires a password') >= 0) {
+            document.getElementById('formpwd').type = 'password';
+          }
+          return;
+        }
+
         var line = '';
         for( var i = 0; i < result.length; i++ ) {
             line += '<div class="recent">';
@@ -224,6 +238,7 @@ function escapeHtml(str) {
 <body onload="javascript:init();">
     <a class="nodeco" href="?"><h1>Who's That?</h1><h2>OSM User Names Database</h2></a>
     <form method="get">
+    <input type="hidden" name="pwd" id="formpwd" value="">
     <div><input type="text" name="q" id="formuser" value="" onkeyup="javascript:userFieldChanged();"><input type="submit" value="Go"></div>
     </form>
     <div id="results"></div>

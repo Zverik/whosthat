@@ -3,9 +3,14 @@ require('config.php');
 
 header('Content-type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
+
+
 $recent_cache = 'recent.json';
 $result = array();
-if( isset($_REQUEST['action']) ) {
+if (SITE_PASSWORD != '' && !(isset($_REQUEST['password']) && $_REQUEST['password'] == SITE_PASSWORD)) {
+  $result['error'] = 'This API requires a password';
+}
+elseif( isset($_REQUEST['action']) ) {
     $db = new mysqli(MYSQL_HOST, MYSQL_USER, MYSQL_PASSWORD, MYSQL_DATABASE);
     if ($db->connect_errno) {
         $result['error'] = "Failed to connect to MySQL: (" . $db->connect_errno . ") " . $db->connect_error;

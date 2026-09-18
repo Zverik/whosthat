@@ -41,6 +41,11 @@ To specify users, use one of those parameters:
   * `name=<user_name>`: query by user name. Note that there can be several matches.
   * `q=<query_string>`: search all users whose name matches the query string.
 
+## Password Protection
+
+To avoid GDPR takedowns, set the `SITE_PASSWORD` configuration variable to something.
+You would need to pass its value to the API in `&password=...` parameter.
+
 ## License
 
 All this is written by Ilya Zverev and licensed WTFPL: do whatever you want with it.
