@@ -22,7 +22,7 @@ function init() {
     }
 
     var queryString = parseQueryString();
-    if (queryString.pwd) setPassword(pwd);
+    if (queryString.pwd) setPassword(queryString.pwd);
     if( queryString.q ) {
         setUser(queryString.q);
     } else if( queryString.name ) {
@@ -145,7 +145,7 @@ function setId(uid) {
 
 function setPassword(pwd) {
     password = pwd;
-    document.getElementById('formpwd').value = pwd;
+    // document.getElementById('formpwd').value = pwd;
     document.cookie = 'pwd=' + pwd;
 }
 
