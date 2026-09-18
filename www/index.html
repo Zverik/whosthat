@@ -59,21 +59,12 @@ function parseQueryString() {
 }
 
 function ajax(url, func) {
-    try { http.abort(); } catch(e) {}
-    var http = null;
-    if (window.XMLHttpRequest) {
-        http = new XMLHttpRequest();
-    } else if (window.ActiveXObject) { // Older IE.
-        http = new ActiveXObject("MSXML2.XMLHTTP.3.0");
-    }
-    http.onreadystatechange = function() {
-        if( http.readyState != 4 || http.status != 200 ) return;
-        var result = eval(http.responseText);
-        func(result);
-    };
     if (password != '') url = url + '&password=' + encodeURIComponent(password);
-    http.open('GET', url, true);
-    http.send(null);
+    fetch(url).then(response => response.json()).then(response => {
+        func(response);
+    }).catch(err => {
+        console.log('Error requesting from ' + url + ': ' + err);
+    });
 }
 
 function showRecent() {
